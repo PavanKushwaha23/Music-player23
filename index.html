@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6d28d9;
+            --primary-dark: #5b21b6;
+            --secondary: #e879f9;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background-color: var(--bg-secondary);
+            border-radius: 9999px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 9999px;
+            width: 0;
+        }
+
+        .thumb {
+            width: 12px;
+            height: 12px;
+            background-color: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-bar:hover .thumb {
+            opacity: 1;
+        }
+
+        .song-art {
+            animation: rotate 20s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .player-active .song-art {
+            animation-play-state: running;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            background: var(--bg-secondary);
+            border-radius: 9999px;
+            cursor: pointer;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .playlist-item:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .playlist-item.active {
+            background-color: var(--bg-primary);
+            border-left: 3px solid var(--primary);
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+    <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+        <!-- Left Sidebar - Playlist -->
+        <div class="w-full md:w-80 bg-slate-800 overflow-y-none p-4 hidden  md:block">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Playlist</h2>
+                <div class="flex space-x-2">
+                    <button class="text-slate-400 hover:text-white" id="sort-alphabetical">
+                        <i class="fas fa-sort-alpha-down"></i>
+                    </button>
+                    <button class="text-slate-400 hover:text-white" id="sort-recent">
+                        <i class="fas fa-clock"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="relative mb-4">
+                <input type="text" placeholder="Search..." class="w-full bg-slate-700 text-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div class="space-y-2" id="playlist">
+                <div class="playlist-item active flex items-center p-3 rounded-lg cursor-pointer" data-src="Joy Ma Kali (Shyama Sangeet) - Keshab Dey-BarmanMusic.Com.mp3">
+                    <div class="w-10 h-10 bg-purple-700 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Joy Maa Kali</div>
+                        <div class="text-sm text-slate-400">Bhajan</div>
+                    </div>
+                </div>
+                <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="Maa Go Tumi Jagatmoyi (Shyama Sangeet) - Keshab Dey-BarmanMusic.Com.mp3">
+                    <div class="w-10 h-10 bg-pink-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Maa Go Tumi Jagatmoyi</div>
+                        <div class="text-sm text-slate-400">Bhajan</div>
+                    </div>
+                </div>
+                <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="Thakte Dis Re Maa (Shyama Sangeet) - Keshab Dey-BarmanMusic.Com.mp3">
+                    <div class="w-10 h-10 bg-blue-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Thakte Dis Re Maa</div>
+                        <div class="text-sm text-slate-400">Bhajan</div>
+                    </div>
+                </div>
+                <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="WhatsApp Audio 2025-07-03 at 16.41.54_b5ade01d.mp3">
+                    <div class="w-10 h-10 bg-yellow-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Tui Amar Priyo Ganer Moto</div>
+                        <div class="text-sm text-slate-400">Romantic</div>
+                    </div>
+                </div>
+                <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="WhatsApp Audio 2025-07-03 at 16.41.53_d061ca25.mp3">
+                    <div class="w-10 h-10 bg-green-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Tui Amar Priyo Ganer Moto</div>
+                        <div class="text-sm text-slate-400">Romantic</div>
+                    </div>
+                </div> <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="love-me-like-you-do-RingtoneBaaz.co_.mp3">
+                    <div class="w-10 h-10 bg-green-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Love Like You Do</div>
+                        <div class="text-sm text-slate-400">Romantic</div>
+                    </div>
+                </div>
+                 <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="cheapthrillsp-37216.mp3">
+                    <div class="w-10 h-10 bg-green-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Cheap Thrills</div>
+                        <div class="text-sm text-slate-400">Romantic</div>
+                    </div>
+                </div>
+                 <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="Preme-Pore-Jai-Rubel-Khandokar (1).mp3">
+                    <div class="w-10 h-10 bg-green-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Preme Pore jai</div>
+                        <div class="text-sm text-slate-400">Sad</div>
+                    </div>
+                </div>
+                 <div class="playlist-item flex items-center p-3 rounded-lg cursor-pointer" data-src="Sia-Unstoppable-ringtone-download.mp3">
+                    <div class="w-10 h-10 bg-green-500 rounded-md flex items-center justify-center mr-3">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div>
+                        <div class="font-medium">Sia Unstoppable</div>
+                        <div class="text-sm text-slate-400">English</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- <body class="flex flex-col h-screen">
+    <button id="toggle-sidebar" class="md:hidden p-2 bg-purple-600 text-white rounded">Toggle Playlist</button>
+    <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+        Left Sidebar - Playlist 
+        <div id="sidebar" class="w-full md:w-80 bg-slate-800 overflow-y-auto p-4 hidden md:block">
+            ...
+        </div>
+        ...
+    </div>
+</body> -->
+
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto p-6 flex flex-col items-center justify-center">
+            <div class="max-w-lg w-full">
+                <!-- Album Art -->
+                <div class="song-art w-64 h-64 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full mx-auto mb-8 overflow-hidden shadow-xl" style="animation-play-state: paused;">
+                    <img src="https://static.vecteezy.com/system/resources/previews/025/453/932/non_2x/letter-p-travel-logo-concept-with-flying-air-plane-symbol-free-vector.jpg" alt="Album cover artwork" class="w-full h-full object-cover" onerror="this.parentNode.style.background='linear-gradient(to bottom right, #6d28d9, #e879f9)'">
+                </div>
+
+                <!-- Song Info -->
+                <div class="text-center mb-8 relative">
+                    <h1 class="text-2xl font-bold mb-1" id="song-title">My Favourite</h1>
+                    <p class="text-slate-400 text-lg" id="song-artist">Collection</p>
+                    <button class="absolute right-0 top-0 text-slate-400 hover:text-pink-500 transition-colors" id="like">
+                        <i class="far fa-heart text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mb-4">
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress" id="progress"></div>
+                        <div class="thumb" id="thumb"></div>
+                    </div>
+                    <div class="flex justify-between text-sm text-slate-400 mt-1">
+                        <span id="current-time">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-center space-x-6 mb-8">
+                    <button class="text-slate-400 hover:text-white transition-colors" id="shuffle">
+                        <i class="fas fa-random text-xl"></i>
+                    </button>
+                    <button class="text-slate-400 hover:text-white transition-colors" id="prev">
+                        <i class="fas fa-step-backward text-2xl"></i>
+                    </button>
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors" id="play">
+                        <i class="fas fa-play text-xl"></i>
+                    </button>
+                    <button class="text-slate-400 hover:text-white transition-colors" id="next">
+                        <i class="fas fa-step-forward text-2xl"></i>
+                    </button>
+                    <button class="text-slate-400 hover:text-white transition-colors" id="repeat">
+                        <i class="fas fa-redo text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Volume -->
+                <div class="flex items-center space-x-4">
+                    <button class="text-slate-400 hover:text-white transition-colors" id="mute">
+                        <i class="fas fa-volume-up text-xl"></i>
+                    </button>
+                    <div class="flex items-center space-x-2 flex-1">
+                        <i class="fas fa-volume-down text-slate-400" id="volume-icon"></i>
+                        <input type="range" min="0" max="1" step="0.01" value="0.7" class="volume-slider flex-1" id="volume">
+                        <i class="fas fa-volume-up text-slate-400 hidden" id="volume-up-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audio" preload="metadata">
+        <source src="Joy Ma Kali (Shyama Sangeet) - Keshab Dey-BarmanMusic.Com.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('audio');
+            const playBtn = document.getElementById('play');
+            const prevBtn = document.getElementById('prev');
+            const nextBtn = document.getElementById('next');
+            const progressBar = document.getElementById('progress-bar');
+            const progress = document.getElementById('progress');
+            const thumb = document.getElementById('thumb');
+            const currentTimeEl = document.getElementById('current-time');
+            const durationEl = document.getElementById('duration');
+            const volumeSlider = document.getElementById('volume');
+            const volumeIcon = document.getElementById('volume-icon');
+            const volumeUpIcon = document.getElementById('volume-up-icon');
+            const repeatBtn = document.getElementById('repeat');
+            const shuffleBtn = document.getElementById('shuffle');
+            const songTitle = document.getElementById('song-title');
+            const songArtist = document.getElementById('song-artist');
+            const playlistItems = document.querySelectorAll('.playlist-item');
+            const playerContainer = document.querySelector('body');
+
+            let isPlaying = false;
+            let isShuffle = false;
+            let isRepeat = false;
+            let currentSongIndex = 0;
+
+            // Format time in seconds to MM:SS
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+
+            // Update progress bar
+            function updateProgress() {
+                const { duration, currentTime } = audio;
+                progress.style.width = `${(currentTime / duration) * 100}%`;
+                thumb.style.left = `${(currentTime / duration) * 100}%`;
+                currentTimeEl.textContent = formatTime(currentTime);
+                
+                if (!isNaN(duration)) {
+                    durationEl.textContent = formatTime(duration);
+                }
+            }
+
+            // Set progress bar when clicked
+            function setProgress(e) {
+                const width = this.clientWidth;
+                const clickX = e.offsetX;
+                const duration = audio.duration;
+                audio.currentTime = (clickX / width) * duration;
+            }
+
+            // Play or pause song
+            function togglePlay() {
+                if (isPlaying) {
+                    audio.pause();
+                    playBtn.innerHTML = '<i class="fas fa-play text-xl"></i>';
+                    playerContainer.classList.remove('player-active');
+                } else {
+                    audio.play();
+                    playBtn.innerHTML = '<i class="fas fa-pause text-xl"></i>';
+                    playerContainer.classList.add('player-active');
+                }
+                isPlaying = !isPlaying;
+            }
+
+            // Change song
+            function changeSong(index) {
+                const song = playlistItems[index];
+                const title = song.querySelector('div:nth-child(2) > div:nth-child(1)').textContent;
+                const artist = song.querySelector('div:nth-child(2) > div:nth-child(2)').textContent;
+                const src = song.dataset.src;
+
+                audio.src = src;
+                songTitle.textContent = title;
+                songArtist.textContent = artist;
+
+                if (isPlaying) {
+                    audio.play();
+                }
+
+                // Update active song in playlist
+                playlistItems.forEach((item, i) => {
+                    item.classList.toggle('active', i === index);
+                });
+
+                currentSongIndex = index;
+            }
+
+            // Go to previous song
+            function prevSong() {
+                currentSongIndex = (currentSongIndex - 1 + playlistItems.length) % playlistItems.length;
+                changeSong(currentSongIndex);
+            }
+
+            // Go to next song
+            function nextSong() {
+                if (isShuffle) {
+                    let newIndex;
+                    do {
+                        newIndex = Math.floor(Math.random() * playlistItems.length);
+                    } while (newIndex === currentSongIndex);
+                    currentSongIndex = newIndex;
+                } else {
+                    currentSongIndex = (currentSongIndex + 1) % playlistItems.length;
+                }
+                changeSong(currentSongIndex);
+            }
+
+            // Set volume
+            function setVolume() {
+                audio.volume = this.value;
+                volumeIcon.classList.toggle('hidden', this.value < 0.5);
+                volumeUpIcon.classList.toggle('hidden', this.value >= 0.5);
+            }
+
+            // Toggle shuffle
+            function toggleShuffle() {
+                isShuffle = !isShuffle;
+                shuffleBtn.classList.toggle('text-purple-400', isShuffle);
+                shuffleBtn.classList.toggle('text-slate-400', !isShuffle);
+            }
+
+            // Toggle repeat
+            function toggleRepeat() {
+                isRepeat = !isRepeat;
+                repeatBtn.classList.toggle('text-purple-400', isRepeat);
+                repeatBtn.classList.toggle('text-slate-400', !isRepeat);
+                audio.loop = isRepeat;
+            }
+
+            // Event listeners
+            playBtn.addEventListener('click', togglePlay);
+            prevBtn.addEventListener('click', prevSong);
+            nextBtn.addEventListener('click', nextSong);
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', () => {
+                if (!isRepeat) {
+                    nextSong();
+                }
+            });
+            progressBar.addEventListener('click', setProgress);
+            volumeSlider.addEventListener('input', setVolume);
+            shuffleBtn.addEventListener('click', toggleShuffle);
+            repeatBtn.addEventListener('click', toggleRepeat);
+
+            // Playlist item click handler
+            playlistItems.forEach((item, index) => {
+                item.addEventListener('click', () => changeSong(index));
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlay();
+                } else if (e.code === 'ArrowRight') {
+                    audio.currentTime = Math.min(audio.currentTime + 10, audio.duration);
+                } else if (e.code === 'ArrowLeft') {
+                    audio.currentTime = Math.max(audio.currentTime - 10, 0);
+                }
+            });
+
+            // Volume and mute control
+            const muteBtn = document.getElementById('mute');
+            let isMuted = false;
+            let lastVolume = audio.volume;
+            
+            muteBtn.addEventListener('click', () => {
+                if (isMuted) {
+                    audio.volume = lastVolume;
+                    volumeSlider.value = lastVolume;
+                    muteBtn.innerHTML = '<i class="fas fa-volume-up text-xl"></i>';
+                } else {
+                    lastVolume = audio.volume;
+                    audio.volume = 0;
+                    volumeSlider.value = 0;
+                    muteBtn.innerHTML = '<i class="fas fa-volume-mute text-xl"></i>';
+                }
+                isMuted = !isMuted;
+            });
+
+            // Like button
+            const likeBtn = document.getElementById('like');
+            likeBtn.addEventListener('click', () => {
+                likeBtn.classList.toggle('text-pink-500');
+                likeBtn.classList.toggle('far');
+                likeBtn.classList.toggle('fas');
+            });
+
+            // Sort functionality
+            const sortAlphaBtn = document.getElementById('sort-alphabetical');
+            const sortRecentBtn = document.getElementById('sort-recent');
+            const playlistContainer = document.getElementById('playlist');
+
+            sortAlphaBtn.addEventListener('click', () => {
+                const items = Array.from(playlistItems);
+                items.sort((a, b) => 
+                    a.querySelector('.font-medium').textContent.localeCompare(b.querySelector('.font-medium').textContent)
+                );
+                playlistContainer.innerHTML = '';
+                items.forEach(item => playlistContainer.appendChild(item));
+            });
+
+            sortRecentBtn.addEventListener('click', () => {
+                const items = Array.from(playlistItems);
+                playlistContainer.innerHTML = '';
+                items.forEach(item => playlistContainer.appendChild(item));
+            });
+
+            // Set initial volume
+            audio.volume = volumeSlider.value;
+        });
+
+//         document.getElementById('toggle-sidebar').addEventListener('click', function() {
+//     const sidebar = document.getElementById('sidebar');
+//     sidebar.classList.toggle('hidden');
+// });
+
+    </script>
+</body>
+</html>
